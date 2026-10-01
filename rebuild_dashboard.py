@@ -33,48 +33,51 @@ NAVY = "1F4E79"
 RED = "C62828"
 GREEN = "2E7D32"
 
-def make_simple_line_chart(ws, title, series_defs, cats):
+def make_chart(ws, title, series_defs, cats):
     chart = LineChart()
     chart.title = title
     chart.style = 2
-    chart.height = 12
-    chart.width = 20
+    chart.height = 13
+    chart.width = 22
     chart.legend.position = 'b'
 
     chart.y_axis.numFmt = '#,##0'
-    chart.y_axis.majorGridlines = None
-    chart.y_axis.minorGridlines = None
-    chart.y_axis.title = None
+    chart.y_axis.title = "CHF"
     chart.x_axis.title = None
-    chart.x_axis.majorGridlines = None
-    chart.x_axis.minorGridlines = None
+    chart.y_axis.minorGridlines = None
 
-    for row_num, label, color, dash in series_defs:
+    for row_num, label, color, dash, width in series_defs:
         ref = Reference(ws, min_col=2, max_col=11, min_row=row_num)
         chart.add_data(ref, from_rows=True)
         idx = len(chart.series) - 1
         s = chart.series[idx]
         s.title = openpyxl.chart.series.SeriesLabel(v=label)
         s.graphicalProperties.line.solidFill = color
-        s.graphicalProperties.line.width = 25000
+        s.graphicalProperties.line.width = width
         if dash:
             s.graphicalProperties.line.dashStyle = dash
+
+        s.dLbls = DataLabelList()
+        s.dLbls.showVal = True
+        s.dLbls.numFmt = '#,##0'
+        s.dLbls.showCatName = False
+        s.dLbls.showSerName = False
 
     chart.set_categories(cats)
     return chart
 
 # Chart 1: Profit After Tax
-chart1 = make_simple_line_chart(ws, "Profit After Tax", [
-    (19, "Base", NAVY, None),
-    (31, "Downside", RED, "dash"),
-    (43, "Upside", GREEN, "dash"),
+chart1 = make_chart(ws, "Profit After Tax (CHF)", [
+    (19, "Base", NAVY, None, 28000),
+    (31, "Downside", RED, "dash", 18000),
+    (43, "Upside", GREEN, "dash", 18000),
 ], cats)
 
 # Chart 2: Cumulative Cash
-chart2 = make_simple_line_chart(ws, "Cumulative Cash", [
-    (20, "Base", NAVY, None),
-    (32, "Downside", RED, "dash"),
-    (44, "Upside", GREEN, "dash"),
+chart2 = make_chart(ws, "Cumulative Cash (CHF)", [
+    (20, "Base", NAVY, None, 28000),
+    (32, "Downside", RED, "dash", 18000),
+    (44, "Upside", GREEN, "dash", 18000),
 ], cats)
 
 ws.add_chart(chart1, "M1")
