@@ -33,73 +33,49 @@ NAVY = "1F4E79"
 RED = "C62828"
 GREEN = "2E7D32"
 
-# Chart 1: Profit After Tax (Line)
-chart1 = LineChart()
-chart1.title = "Profit After Tax (10-Year)"
-chart1.style = 2
-chart1.y_axis.title = "CHF"
-chart1.y_axis.numFmt = '#,##0'
-chart1.height = 12
-chart1.width = 20
-chart1.legend.position = 'b'
-chart1.y_axis.crossesAt = 0
+def make_simple_line_chart(ws, title, series_defs, cats):
+    chart = LineChart()
+    chart.title = title
+    chart.style = 2
+    chart.height = 12
+    chart.width = 20
+    chart.legend.position = 'b'
 
-# Base (row 19), Downside (row 31), Upside (row 43)
-for row_num, label, color, dash in [
+    chart.y_axis.numFmt = '#,##0'
+    chart.y_axis.majorGridlines = None
+    chart.y_axis.minorGridlines = None
+    chart.y_axis.title = None
+    chart.x_axis.title = None
+    chart.x_axis.majorGridlines = None
+    chart.x_axis.minorGridlines = None
+
+    for row_num, label, color, dash in series_defs:
+        ref = Reference(ws, min_col=2, max_col=11, min_row=row_num)
+        chart.add_data(ref, from_rows=True)
+        idx = len(chart.series) - 1
+        s = chart.series[idx]
+        s.title = openpyxl.chart.series.SeriesLabel(v=label)
+        s.graphicalProperties.line.solidFill = color
+        s.graphicalProperties.line.width = 25000
+        if dash:
+            s.graphicalProperties.line.dashStyle = dash
+
+    chart.set_categories(cats)
+    return chart
+
+# Chart 1: Profit After Tax
+chart1 = make_simple_line_chart(ws, "Profit After Tax", [
     (19, "Base", NAVY, None),
     (31, "Downside", RED, "dash"),
     (43, "Upside", GREEN, "dash"),
-]:
-    ref = Reference(ws, min_col=2, max_col=11, min_row=row_num)
-    chart1.add_data(ref, from_rows=True)
-    idx = len(chart1.series) - 1
-    chart1.series[idx].title = openpyxl.chart.series.SeriesLabel(v=label)
-    chart1.series[idx].graphicalProperties.line.solidFill = color
-    chart1.series[idx].graphicalProperties.line.width = 28000 if not dash else 20000
-    if dash:
-        chart1.series[idx].graphicalProperties.line.dashStyle = dash
-    chart1.series[idx].smooth = True
+], cats)
 
-chart1.set_categories(cats)
-chart1.series[0].dLbls = DataLabelList()
-chart1.series[0].dLbls.showVal = True
-chart1.series[0].dLbls.numFmt = '#,##0'
-chart1.series[0].dLbls.showCatName = False
-chart1.series[0].dLbls.showSerName = False
-
-# Chart 2: Cumulative Cash (Line)
-chart2 = LineChart()
-chart2.title = "Cumulative Cash (10-Year)"
-chart2.style = 2
-chart2.y_axis.title = "CHF"
-chart2.y_axis.numFmt = '#,##0'
-chart2.height = 12
-chart2.width = 20
-chart2.legend.position = 'b'
-chart2.y_axis.crossesAt = 0
-
-# Base (row 20), Downside (row 32), Upside (row 44)
-for row_num, label, color, dash in [
+# Chart 2: Cumulative Cash
+chart2 = make_simple_line_chart(ws, "Cumulative Cash", [
     (20, "Base", NAVY, None),
     (32, "Downside", RED, "dash"),
     (44, "Upside", GREEN, "dash"),
-]:
-    ref = Reference(ws, min_col=2, max_col=11, min_row=row_num)
-    chart2.add_data(ref, from_rows=True)
-    idx = len(chart2.series) - 1
-    chart2.series[idx].title = openpyxl.chart.series.SeriesLabel(v=label)
-    chart2.series[idx].graphicalProperties.line.solidFill = color
-    chart2.series[idx].graphicalProperties.line.width = 28000 if not dash else 20000
-    if dash:
-        chart2.series[idx].graphicalProperties.line.dashStyle = dash
-    chart2.series[idx].smooth = True
-
-chart2.set_categories(cats)
-chart2.series[0].dLbls = DataLabelList()
-chart2.series[0].dLbls.showVal = True
-chart2.series[0].dLbls.numFmt = '#,##0'
-chart2.series[0].dLbls.showCatName = False
-chart2.series[0].dLbls.showSerName = False
+], cats)
 
 ws.add_chart(chart1, "M1")
 ws.add_chart(chart2, "M17")
