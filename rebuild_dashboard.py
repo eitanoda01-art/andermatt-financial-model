@@ -341,7 +341,7 @@ ws.cell(row=65, column=1).font = Font(bold=True)
 
 ws.cell(row=66, column=1).value = "Direct Cost Factor"
 ws.cell(row=66, column=1).font = LABEL_FONT
-for c, val in [(2, 0.80), (3, 1), (4, 1)]:
+for c, val in [(2, 0.90), (3, 1), (4, 1)]:
     ws.cell(row=66, column=c).value = val
     ws.cell(row=66, column=c).fill = YELLOW
 
@@ -367,7 +367,7 @@ for c, val in [(2, 2029), (3, 2027), (4, 2027)]:
 
 ws.cell(row=73, column=1).value = "SCENARIO DEFINITIONS:"
 ws.cell(row=73, column=1).font = Font(bold=True, size=9, color="666666")
-ws.cell(row=74, column=1).value = "  Downside: Tickets -15%, prices -10%, partnerships -40%, ASA -25%, direct costs ×0.8, overhead fixed 8K, founder pay halved, summer from 2029."
+ws.cell(row=74, column=1).value = "  Downside: Tickets -15%, prices -10%, partnerships -40%, ASA -25%, direct costs ×0.9, overhead fixed 8K, founder pay halved (BP), summer from 2029."
 ws.cell(row=74, column=1).font = COMMENT_FONT
 ws.cell(row=75, column=1).value = "  Base: All factors at 1.0 — as entered in Revenue/Cost sheets. Summer from 2027."
 ws.cell(row=75, column=1).font = COMMENT_FONT
