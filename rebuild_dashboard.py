@@ -305,6 +305,146 @@ pl["A29"].value = "PROFIT AFTER TAX"
 for c in range(1, 5):
     ws.cell(row=6, column=c).value = None
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# REWRITE SCENARIO ADJUSTMENTS (rows 55-72)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+clear_rows(ws, 55, 72)
+
+ws.cell(row=55, column=1).value = "SCENARIO ADJUSTMENTS (change values below to adjust scenarios)"
+ws.cell(row=55, column=1).fill = ASSUMPTIONS_FILL
+ws.cell(row=55, column=1).font = ASSUMPTIONS_FONT
+
+for c, lbl in [(2, "Downside"), (3, "Base"), (4, "Upside")]:
+    ws.cell(row=56, column=c).value = lbl
+    ws.cell(row=56, column=c).font = Font(bold=True)
+
+ws.cell(row=58, column=1).value = "■ REVENUE FACTORS"
+ws.cell(row=58, column=1).font = Font(bold=True)
+ws.cell(row=59, column=1).value = "  These multiply each year's revenue line directly."
+ws.cell(row=59, column=1).font = COMMENT_FONT
+
+ADJ_ROWS = {
+    60: ("Ticket Occupancy", 0.85, 1, 1),
+    61: ("Ticket Price Factor", 0.90, 1, 1.10),
+    62: ("Partnership Factor", 0.60, 1, 1.40),
+    63: ("ASA Factor", 0.75, 1, 1.25),
+}
+for r, (label, ds, base, us) in ADJ_ROWS.items():
+    ws.cell(row=r, column=1).value = label
+    ws.cell(row=r, column=1).font = LABEL_FONT
+    for c, val in [(2, ds), (3, base), (4, us)]:
+        ws.cell(row=r, column=c).value = val
+        ws.cell(row=r, column=c).fill = YELLOW
+
+ws.cell(row=65, column=1).value = "■ STRUCTURAL FACTORS"
+ws.cell(row=65, column=1).font = Font(bold=True)
+
+ws.cell(row=66, column=1).value = "Summer Start Year"
+ws.cell(row=66, column=1).font = LABEL_FONT
+for c, val in [(2, 2029), (3, 2027), (4, 2027)]:
+    ws.cell(row=66, column=c).value = val
+    ws.cell(row=66, column=c).fill = YELLOW
+
+ws.cell(row=67, column=1).value = "Founder Pay Factor"
+ws.cell(row=67, column=1).font = LABEL_FONT
+for c, val in [(2, 0.50), (3, 1), (4, 1)]:
+    ws.cell(row=67, column=c).value = val
+    ws.cell(row=67, column=c).fill = YELLOW
+
+ws.cell(row=69, column=1).value = "SCENARIO DEFINITIONS:"
+ws.cell(row=69, column=1).font = Font(bold=True, size=9, color="666666")
+ws.cell(row=70, column=1).value = "  Downside: Tickets 15% below plan, prices 10% lower, partnerships 40% lower, ASA 25% lower, summer from 2029, founder pay halved."
+ws.cell(row=70, column=1).font = COMMENT_FONT
+ws.cell(row=71, column=1).value = "  Base: All factors at 1.0 — as entered in Revenue/Cost sheets. Summer from 2027."
+ws.cell(row=71, column=1).font = COMMENT_FONT
+ws.cell(row=72, column=1).value = "  Upside: Prices 10% higher, partnerships 40% higher, ASA +25%. Summer from 2027."
+ws.cell(row=72, column=1).font = COMMENT_FONT
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# REWRITE ALL SCENARIO FORMULAS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCENARIOS = [
+    # (section_label, first_row, adj_col)  adj_col: B=Downside, C=Base, D=Upside
+    ("BASE SCENARIO", 10, "C"),
+    ("DOWNSIDE SCENARIO", 22, "B"),
+    ("UPSIDE SCENARIO", 34, "D"),
+]
+
+for section_label, sec_start, adj_col in SCENARIOS:
+    r_ticket = sec_start + 2   # 12, 24, 36
+    r_partner = sec_start + 3  # 13, 25, 37
+    r_other = sec_start + 4    # 14, 26, 38
+    r_total_rev = sec_start + 5  # 15, 27, 39
+    r_total_cost = sec_start + 6  # 16, 28, 40
+    r_ebit = sec_start + 7     # 17, 29, 41
+    r_tax = sec_start + 8      # 18, 30, 42
+    r_pat = sec_start + 9      # 19, 31, 43
+    r_cumcash = sec_start + 10  # 20, 32, 44
+
+    # Labels (adj. suffix for non-base)
+    suffix = " (adj.)" if adj_col != "C" else ""
+    ws.cell(row=r_ticket, column=1).value = f"    Net Ticket Revenue{suffix}"
+    ws.cell(row=r_partner, column=1).value = f"    Partnership Revenue{suffix}"
+    ws.cell(row=r_other, column=1).value = f"    Other Revenue (ASA+F&B+Dinner+Other){suffix}"
+    ws.cell(row=r_total_rev, column=1).value = "Total Revenue"
+    ws.cell(row=r_total_cost, column=1).value = f"  Total Costs{suffix}"
+
+    for i in range(10):
+        cl = COL_LETTERS[i + 2]
+        year = YEARS[i]
+
+        # Ticket = P&L ticket × occupancy × price factor
+        ws.cell(row=r_ticket, column=i+2).value = (
+            f"='P&L'!{cl}10*${adj_col}$60*${adj_col}$61"
+        )
+
+        # Partnership = P&L partnership × partnership factor
+        ws.cell(row=r_partner, column=i+2).value = (
+            f"='P&L'!{cl}11*${adj_col}$62"
+        )
+
+        # Other = ASA×factor + F&B + Dinner + Other
+        ws.cell(row=r_other, column=i+2).value = (
+            f"='P&L'!{cl}12*${adj_col}$63+'P&L'!{cl}13+'P&L'!{cl}14+'P&L'!{cl}15"
+        )
+
+        # Total Revenue = (ticket+partner+other) × (1 + summer multiplier if year >= start)
+        ws.cell(row=r_total_rev, column=i+2).value = (
+            f"=({cl}{r_ticket}+{cl}{r_partner}+{cl}{r_other})"
+            f"*(1+IF({year}>=${adj_col}$66,Revenue!$B$11,0))"
+        )
+
+        # Total Costs = Direct + Overhead + FounderPay×factor
+        ws.cell(row=r_total_cost, column=i+2).value = (
+            f"='P&L'!{cl}20+'P&L'!{cl}21+'P&L'!{cl}22*${adj_col}$67"
+        )
+
+        # EBIT = Revenue + Costs (costs are negative)
+        ws.cell(row=r_ebit, column=i+2).value = (
+            f"={cl}{r_total_rev}+{cl}{r_total_cost}"
+        )
+
+        # Tax
+        ws.cell(row=r_tax, column=i+2).value = (
+            f"=IF({cl}{r_ebit}>0,-{cl}{r_ebit}*'P&L'!$B$5,0)"
+        )
+
+        # PAT
+        ws.cell(row=r_pat, column=i+2).value = (
+            f"={cl}{r_ebit}+{cl}{r_tax}"
+        )
+
+        # Cumulative Cash
+        if i == 0:
+            ws.cell(row=r_cumcash, column=i+2).value = (
+                f"='P&L'!$B$6+{cl}{r_pat}"
+            )
+        else:
+            prev_cl = COL_LETTERS[i + 1]
+            ws.cell(row=r_cumcash, column=i+2).value = (
+                f"={prev_cl}{r_cumcash}+{cl}{r_pat}"
+            )
+
 # ── Replace charts: remove all 3, add 2 new ones ──
 ws._charts.clear()
 
