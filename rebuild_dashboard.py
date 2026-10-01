@@ -266,7 +266,19 @@ cost["A3"].value = "MODEL ASSUMPTIONS"
 cost["A3"].fill = ASSUMPTIONS_FILL
 cost["A3"].font = ASSUMPTIONS_FONT
 
-# ── 2. Add TOTAL COST row after Founder Pay (row 55) ──
+# ── 2. Add comment to F&B Credit cell explaining the 9,000 CHF ──
+fb_credit_comment = Comment(
+    "BP shows 'Bar/F&B (net) = 9,000 CHF' as revenue, but per Rox confirmation, "
+    "Aura receives no share of bar/food sales. This 9,000 is a deposit-style credit: "
+    "guests are expected to spend more than 9,000 at the venue, so the excess offsets "
+    "venue costs. It is correctly recorded here as a cost reduction, not as revenue.",
+    "Model Note"
+)
+fb_credit_comment.width = 350
+fb_credit_comment.height = 120
+cost.cell(row=17, column=1).comment = fb_credit_comment
+
+# ── 3. Add TOTAL COST row after Founder Pay (row 55) ──
 COST_TOTAL_ROW = 57
 cost.cell(row=COST_TOTAL_ROW, column=1).value = "TOTAL COST"
 cost.cell(row=COST_TOTAL_ROW, column=1).fill = SECTION_FILL
