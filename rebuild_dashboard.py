@@ -257,6 +257,26 @@ for i in range(10):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# COST SHEET CHANGES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+cost = wb["Cost"]
+
+# ── 1. Rename "GLOBAL COST VARIABLES" → "MODEL ASSUMPTIONS" ──
+cost["A3"].value = "MODEL ASSUMPTIONS"
+cost["A3"].fill = ASSUMPTIONS_FILL
+cost["A3"].font = ASSUMPTIONS_FONT
+
+# ── 2. Add TOTAL COST row after Founder Pay (row 55) ──
+COST_TOTAL_ROW = 57
+cost.cell(row=COST_TOTAL_ROW, column=1).value = "TOTAL COST"
+cost.cell(row=COST_TOTAL_ROW, column=1).fill = SECTION_FILL
+cost.cell(row=COST_TOTAL_ROW, column=1).font = SECTION_FONT
+for i in range(10):
+    cl = COL_LETTERS[i+2]
+    cost.cell(row=COST_TOTAL_ROW, column=i+2).value = f"={cl}49+{cl}53+{cl}55"
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # DASHBOARD CHANGES (same as before)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ws = wb["Dashboard"]
