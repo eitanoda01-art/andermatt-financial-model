@@ -308,7 +308,7 @@ for c in range(1, 5):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # REWRITE SCENARIO ADJUSTMENTS (rows 55-72)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-clear_rows(ws, 55, 72)
+clear_rows(ws, 55, 76)
 
 ws.cell(row=55, column=1).value = "SCENARIO ADJUSTMENTS (change values below to adjust scenarios)"
 ws.cell(row=55, column=1).fill = ASSUMPTIONS_FILL
@@ -336,12 +336,12 @@ for r, (label, ds, base, us) in ADJ_ROWS.items():
         ws.cell(row=r, column=c).value = val
         ws.cell(row=r, column=c).fill = YELLOW
 
-ws.cell(row=65, column=1).value = "■ STRUCTURAL FACTORS"
+ws.cell(row=65, column=1).value = "■ COST FACTORS"
 ws.cell(row=65, column=1).font = Font(bold=True)
 
-ws.cell(row=66, column=1).value = "Summer Start Year"
+ws.cell(row=66, column=1).value = "Direct Cost Factor"
 ws.cell(row=66, column=1).font = LABEL_FONT
-for c, val in [(2, 2029), (3, 2027), (4, 2027)]:
+for c, val in [(2, 0.80), (3, 1), (4, 1)]:
     ws.cell(row=66, column=c).value = val
     ws.cell(row=66, column=c).fill = YELLOW
 
@@ -351,14 +351,28 @@ for c, val in [(2, 0.50), (3, 1), (4, 1)]:
     ws.cell(row=67, column=c).value = val
     ws.cell(row=67, column=c).fill = YELLOW
 
-ws.cell(row=69, column=1).value = "SCENARIO DEFINITIONS:"
-ws.cell(row=69, column=1).font = Font(bold=True, size=9, color="666666")
-ws.cell(row=70, column=1).value = "  Downside: Tickets 15% below plan, prices 10% lower, partnerships 40% lower, ASA 25% lower, summer from 2029, founder pay halved."
-ws.cell(row=70, column=1).font = COMMENT_FONT
-ws.cell(row=71, column=1).value = "  Base: All factors at 1.0 — as entered in Revenue/Cost sheets. Summer from 2027."
-ws.cell(row=71, column=1).font = COMMENT_FONT
-ws.cell(row=72, column=1).value = "  Upside: Prices 10% higher, partnerships 40% higher, ASA +25%. Summer from 2027."
-ws.cell(row=72, column=1).font = COMMENT_FONT
+ws.cell(row=68, column=1).value = "Downside Overhead (CHF)"
+ws.cell(row=68, column=1).font = LABEL_FONT
+ws.cell(row=68, column=2).value = 8000
+ws.cell(row=68, column=2).fill = YELLOW
+
+ws.cell(row=70, column=1).value = "■ STRUCTURAL FACTORS"
+ws.cell(row=70, column=1).font = Font(bold=True)
+
+ws.cell(row=71, column=1).value = "Summer Start Year"
+ws.cell(row=71, column=1).font = LABEL_FONT
+for c, val in [(2, 2029), (3, 2027), (4, 2027)]:
+    ws.cell(row=71, column=c).value = val
+    ws.cell(row=71, column=c).fill = YELLOW
+
+ws.cell(row=73, column=1).value = "SCENARIO DEFINITIONS:"
+ws.cell(row=73, column=1).font = Font(bold=True, size=9, color="666666")
+ws.cell(row=74, column=1).value = "  Downside: Tickets -15%, prices -10%, partnerships -40%, ASA -25%, direct costs ×0.8, overhead fixed 8K, founder pay halved, summer from 2029."
+ws.cell(row=74, column=1).font = COMMENT_FONT
+ws.cell(row=75, column=1).value = "  Base: All factors at 1.0 — as entered in Revenue/Cost sheets. Summer from 2027."
+ws.cell(row=75, column=1).font = COMMENT_FONT
+ws.cell(row=76, column=1).value = "  Upside: Prices +10%, partnerships +40%, ASA +25%. Summer from 2027."
+ws.cell(row=76, column=1).font = COMMENT_FONT
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # REWRITE ALL SCENARIO FORMULAS
@@ -411,13 +425,18 @@ for section_label, sec_start, adj_col in SCENARIOS:
         # Total Revenue = (ticket+partner+other) × (1 + summer multiplier if year >= start)
         ws.cell(row=r_total_rev, column=i+2).value = (
             f"=({cl}{r_ticket}+{cl}{r_partner}+{cl}{r_other})"
-            f"*(1+IF({year}>=${adj_col}$66,Revenue!$B$11,0))"
+            f"*(1+IF({year}>=${adj_col}$71,Revenue!$B$11,0))"
         )
 
-        # Total Costs = Direct + Overhead + FounderPay×factor
-        ws.cell(row=r_total_cost, column=i+2).value = (
-            f"='P&L'!{cl}20+'P&L'!{cl}21+'P&L'!{cl}22*${adj_col}$67"
-        )
+        # Total Costs: Downside uses fixed overhead ($B$68), others use P&L overhead
+        if adj_col == "B":  # Downside
+            ws.cell(row=r_total_cost, column=i+2).value = (
+                f"='P&L'!{cl}20*$B$66-$B$68+'P&L'!{cl}22*$B$67"
+            )
+        else:  # Base (C) / Upside (D)
+            ws.cell(row=r_total_cost, column=i+2).value = (
+                f"='P&L'!{cl}20*${adj_col}$66+'P&L'!{cl}21+'P&L'!{cl}22*${adj_col}$67"
+            )
 
         # EBIT = Revenue + Costs (costs are negative)
         ws.cell(row=r_ebit, column=i+2).value = (
