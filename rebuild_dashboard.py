@@ -523,6 +523,103 @@ ws.add_chart(chart2, "M17")
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# INSTRUCTIONS SHEET
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+if "Instructions" in wb.sheetnames:
+    del wb["Instructions"]
+ins = wb.create_sheet("Instructions", 0)
+
+ins.column_dimensions["A"].width = 90
+TITLE_FONT = Font(bold=True, size=14, color="1F4E79")
+H2_FONT = Font(bold=True, size=12, color="1F4E79")
+BODY_FONT = Font(size=11)
+YELLOW_REF_FONT = Font(size=11, bold=True, color="997A00")
+
+content = [
+    ("AURA ANDERMATT — 10-Year Financial Model", TITLE_FONT),
+    ("", None),
+    ("HOW TO USE THIS MODEL", H2_FONT),
+    ("", None),
+    ("This workbook contains a 10-year financial simulation (2027–2036) for Aura Andermatt.", BODY_FONT),
+    ("It consists of 4 working sheets: Dashboard, P&L, Revenue, and Cost.", BODY_FONT),
+    ("", None),
+    ("YELLOW CELLS = EDITABLE INPUTS", H2_FONT),
+    ("", None),
+    ("All sheets are protected. Only yellow-highlighted cells can be edited.", BODY_FONT),
+    ("Yellow cells contain the key assumptions you can adjust:", BODY_FONT),
+    ("  • Revenue sheet: ticket prices, guest counts, F&B spend, partnership values, growth rates", BODY_FONT),
+    ("  • Cost sheet: individual cost items (venue, talent, security, etc.), overhead, founder pay", BODY_FONT),
+    ("  • Dashboard: scenario adjustment factors (occupancy, price, partnership, ASA, costs, summer start)", BODY_FONT),
+    ("All other cells contain formulas that update automatically when you change inputs.", BODY_FONT),
+    ("", None),
+    ("UNLOCKING PROTECTED CELLS", H2_FONT),
+    ("", None),
+    ("If you need to edit a locked (non-yellow) cell or modify the structure:", BODY_FONT),
+    ("  1. Go to Review → Unprotect Sheet", BODY_FONT),
+    ("  2. Enter password: 2027", BODY_FONT),
+    ("  3. Make your changes", BODY_FONT),
+    ("  4. Re-protect via Review → Protect Sheet (password: 2027) when done", BODY_FONT),
+    ("", None),
+    ("SHEET GUIDE", H2_FONT),
+    ("", None),
+    ("Dashboard", Font(bold=True, size=11)),
+    ("  The summary view. Shows Base, Downside, and Upside scenarios side by side.", BODY_FONT),
+    ("  Key Metrics (row 3–5): 10-year cumulative cash and 2027 PAT at a glance.", BODY_FONT),
+    ("  Scenario tables (rows 10–44): Revenue, costs, EBIT, tax, PAT, cumulative cash per year.", BODY_FONT),
+    ("  Scenario Adjustments (rows 55+): Change these yellow cells to adjust scenario assumptions.", BODY_FONT),
+    ("  Two charts visualize PAT and cumulative cash across all three scenarios.", BODY_FONT),
+    ("", None),
+    ("P&L (Profit & Loss)", Font(bold=True, size=11)),
+    ("  Consolidates Revenue and Cost sheets into a single annual P&L statement.", BODY_FONT),
+    ("  All values are formula-driven from Revenue and Cost sheets — no manual input here.", BODY_FONT),
+    ("  This represents the BASE case (no scenario adjustments applied).", BODY_FONT),
+    ("", None),
+    ("Revenue", Font(bold=True, size=11)),
+    ("  Detailed revenue buildup: tickets (3 drops), partnerships, ASA, Bar/F&B, dinner, other.", BODY_FONT),
+    ("  Model Assumptions (rows 3–13): growth rates, summer multiplier, net factor.", BODY_FONT),
+    ("  Summer edition revenue = Winter revenue × Summer Multiplier (default 0.55).", BODY_FONT),
+    ("", None),
+    ("Cost", Font(bold=True, size=11)),
+    ("  Three cost categories: A (fixed/contract), B (guest-linked), C (ambition-linked).", BODY_FONT),
+    ("  Contingency % (row 6) is applied to direct costs. Summer costs = Winter × 0.5.", BODY_FONT),
+    ("  Overhead and Founder Pay are separate from direct costs, entered manually per year.", BODY_FONT),
+    ("", None),
+    ("SCENARIO ADJUSTMENT FACTORS (Dashboard rows 55+)", H2_FONT),
+    ("", None),
+    ("  Factor                  Downside    Base    Upside", Font(size=11, name="Courier New")),
+    ("  Ticket Occupancy          0.85      1.00      1.00", Font(size=11, name="Courier New")),
+    ("  Ticket Price Factor       0.90      1.00      1.10", Font(size=11, name="Courier New")),
+    ("  Partnership Factor        0.60      1.00      1.40", Font(size=11, name="Courier New")),
+    ("  ASA Factor                0.75      1.00      1.25", Font(size=11, name="Courier New")),
+    ("  Direct Cost Factor        0.90      1.00      1.00", Font(size=11, name="Courier New")),
+    ("  Founder Pay Factor        0.50      1.00      1.00", Font(size=11, name="Courier New")),
+    ("  Downside Overhead      8,000 CHF    (uses Cost sheet values)", Font(size=11, name="Courier New")),
+    ("  Summer Start Year        2029      2027      2027", Font(size=11, name="Courier New")),
+    ("", None),
+    ("Base = P&L values as-is. Downside/Upside apply multipliers to the Base values.", BODY_FONT),
+    ("To test custom scenarios, change the yellow factor cells on the Dashboard.", BODY_FONT),
+    ("", None),
+    ("NOTES", H2_FONT),
+    ("", None),
+    ("• F&B revenue share is currently set to 0% across all blocks (Aura receives no F&B revenue).", BODY_FONT),
+    ("  If a share agreement is reached, update the Share Rate cells in the Revenue sheet.", BODY_FONT),
+    ("• The F&B Credit (-9,000 CHF) on the Cost sheet is a deposit against guest F&B spending.", BODY_FONT),
+    ("  See the cell comment on Cost!A17 for details.", BODY_FONT),
+    ("• Dinner Revenue is set to 0 (outsourced, no Aura share). Editable if terms change.", BODY_FONT),
+    ("• All currency values are in CHF.", BODY_FONT),
+]
+
+for i, (text, font) in enumerate(content, start=1):
+    cell = ins.cell(row=i, column=1)
+    cell.value = text
+    if font:
+        cell.font = font
+
+ins.protection.sheet = True
+ins.protection.password = "2027"
+ins.protection.enable()
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # SHEET PROTECTION (password: 2027)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PASSWORD = "2027"
